@@ -1,15 +1,12 @@
 <?php
-
 //Incorporo el script Viaje.
-include "Viaje.php";
+include_once('Viaje.php');
+include_once("Pasajero.php");
+include_once("ResponsableV.php");
 
 //Arreglo predefinido con info de personas.
-$personas =
-  [
-    ['nombre' => 'Iban', 'apellido' => 'Coca', 'documento' => 92837054],
-    ['nombre' => 'Herminia ', 'apellido' => 'Rojo', 'documento' => 27218687],
-    ['nombre' => 'Serafin ', 'apellido' => 'Lopez', 'documento' => 55342412]
-  ];
+$pasajerosPredefinidos[0] = new Pasajero('Iban', 'Coca', 92837054, 2991232345);
+$pasajerosPredefinidos[1] = new Pasajero('Herminia', 'Rojo', 27218687, 2991233452);
 
 // Le pedimos al usuario que ingrese los datos necesarios.
 echo "\n¡Bienvenido a Viaje Feliz! \n";
@@ -19,15 +16,32 @@ echo "Ingrese el destino del viaje: \n";
 $destino = trim(fgets(STDIN));
 echo "Ingrese la cantidad máxima de pasajeros del viaje: \n";
 $cantMaximaPasajeros = trim(fgets(STDIN));
+$datosResponsable = obtenerDatos();
 
 // Creamos una instancia de la clase Viaje.
-$viaje = new Viaje($codigo, $destino, $cantMaximaPasajeros);
+$viaje = new Viaje($codigo, $destino, $cantMaximaPasajeros, $datosResponsable);
 
 // Seteamos los valores pasados por parametro.
 $viaje->setCodigo($codigo);
 $viaje->setDestino($destino);
 $viaje->setCantMaximaPasajeros($cantMaximaPasajeros);
-$viaje->setPasajeros($personas);
+$viaje->setPasajeros($pasajerosPredefinidos);
+$viaje->setResponsable($datosResponsable);
+
+//Funcion para obtener los datos de los del responsable
+function obtenerDatos()
+{
+  echo "Ingrese el Número de Empleado del responsable: \n";
+  $numEmpleado = trim(fgets(STDIN));
+  echo "Ingrese el Número de Licencia del responsable: \n";
+  $numLicencia = trim(fgets(STDIN));
+  echo "Ingrese el Nombre del responsable: \n";
+  $nombre = trim(fgets(STDIN));
+  echo "Ingrese el Apellido del responsable: \n";
+  $apellido = trim(fgets(STDIN));
+  $objetoCreado = new ResponsableV($numEmpleado, $numLicencia, $nombre, $apellido);
+  return $objetoCreado;
+}
 
 //Imprime en pantalla un mensaje informando que ingresó la opcion correcta.
 function reingresarOpcion()
@@ -46,12 +60,13 @@ function menuDatosNuevos()
   echo "2. Destino.\n";
   echo "3. Cantidad maxima de pasajeros.\n";
   echo "4. Todas las anteriores.\n";
-  echo "5. Pasajeros(Modificar,agregar,eliminar).\n";
-  echo "6. Salir.\n";
+  echo "5. Responsable del Viaje.\n";
+  echo "6. Pasajeros(Modificar,agregar,eliminar).\n";
+  echo "7. Salir.\n";
   echo "----------------------\n";
 }
 
-//Imprime en pantalla el Menú.
+//Imprime en pantalla el Menú principal.
 function menu()
 {
   echo "\n-------- Menú --------\n";
@@ -121,30 +136,34 @@ do {
             }
             break;
           case 5:
+            $responsableModificado = obtenerDatos();
+            $viaje->setResponsable($responsableModificado);
+            break;
+          case 6:
             do {
               menuModificarPasajeros();
               $rtaMenuModificarPasajeros = trim(fgets(STDIN));
               switch ($rtaMenuModificarPasajeros) {
                 case 1:
-                  echo "Ingrese el numero de documento que desea cambiar\n";;
+                  echo "Ingrese el numero de documento que desea cambiar\n";
                   $rta = trim(fgets(STDIN));
-                  echo "Ingrese nombre, apellido y número de documento. En su respectivo orden. \n";
+                  echo "Ingrese nombre, apellido, número de documento y número de telefono. En su respectivo orden. \n";
                   $arregloDatosModificados = [
-                    'nombre' => trim(fgets(STDIN)),
-                    'apellido' => trim(fgets(STDIN)),
-                    'documento' => trim(fgets(STDIN)),
+                    new Pasajero(trim(fgets(STDIN)), trim(fgets(STDIN)), trim(fgets(STDIN)), trim(fgets(STDIN)))
                   ];
                   $viaje->modificarPasajero($rta, $arregloDatosModificados);
                   break;
                 case 2:
                   if ($viaje->stockLugar()) {
-                    echo "Ingrese nombre, apellido y número de documento. En su respectivo orden. \n";
-                    $pasajeroNuevo = [
-                      'nombre' => trim(fgets(STDIN)),
-                      'apellido' => trim(fgets(STDIN)),
-                      'documento' => trim(fgets(STDIN)),
-                    ];
-                    $viaje->agregarPasajero($pasajeroNuevo);
+                    echo "Ingrese nombre del pasajero:\n";
+                    $nombre = trim(fgets(STDIN));
+                    echo "Ingrese apellido del pasajero:\n";
+                    $apellido = trim(fgets(STDIN));
+                    echo "Ingrese el número de documento del pasajero:\n";
+                    $nroDoc = trim(fgets(STDIN));
+                    echo "Ingrese el número de teléfono del pasajero:\n";
+                    $telefono = trim(fgets(STDIN));
+                    $viaje->agregarPasajero($nombre, $apellido, $nroDoc, $telefono);
                   } else {
                     echo "\n---------------\n";
                     echo "No hay mas lugar.";
@@ -153,7 +172,7 @@ do {
                   }
                   break;
                 case 3:
-                  echo "Ingrese el numero de documento de la persona que desea sacar\n";;
+                  echo "Ingrese el numero de documento de la persona que desea sacar\n";
                   $rta = trim(fgets(STDIN));
                   $viaje->sacarPasajero($rta);
                   break;
@@ -165,13 +184,13 @@ do {
               }
             } while (!($rtaMenuModificarPasajeros >= 1 && $rtaMenuModificarPasajeros <= 4));
             break;
-          case 6:
+          case 7:
             echo "\nGracias, vuelva prontos. \n";
             break;
           default:
             reingresarOpcion();
         }
-      } while (!($opcionMenuDatosNuevos >= 1 && $opcionMenuDatosNuevos <= 6));
+      } while (!($opcionMenuDatosNuevos >= 1 && $opcionMenuDatosNuevos <= 7));
       break;
     case 2:
       echo "\n----------\n";
