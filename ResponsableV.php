@@ -53,7 +53,7 @@ class ResponsableV
     $this->apellido = $apellido;
   }
 
-  // Metodo tostring que imprime por pantalla
+  // Metodo ToString que imprime por pantalla
   public function __toString()
   {
     return "\nNúmero de empleado: " . $this->getNumResponsable() . ". \nNúmero de Licencia: " . $this->getNumLicencia() . ". \nNombre: " . $this->getNombre() . ". \nApellido: " . $this->getApellido() . ". \n";
